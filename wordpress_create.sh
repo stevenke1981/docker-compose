@@ -17,6 +17,11 @@ read mysql_user
 echo "請輸入 MySQL 使用者密碼："
 read mysql_password
 
+echo "請輸入Wordpress使用Port號(預設為8081)："
+read wordpress_port
+if $wordpress_port=null
+$wordpress_port=8081
+
 # Compose 檔案內容
 compose_content="services:
  db:
@@ -39,7 +44,7 @@ compose_content="services:
  wordpress:
   image: wordpress:latest
   ports:
-   - 8081:80
+   - $wordpress_port:80
   restart: always
   environment:
    - WORDPRESS_DB_HOST=db
@@ -62,7 +67,7 @@ echo "" >> "$folder_name/run.sh"
 echo "# 執行 docker compose" >> "$folder_name/run.sh"
 echo "docker compose up -d" >> "$folder_name/run.sh"
 echo "" >> "$folder_name/run.sh"
-echo "echo \"WordPress 已啟動！請在瀏覽器中輸入 http://$(hostname -I | awk '{print $1}'):8081 進行訪問。\"" >> "$folder_name/run.sh"
+echo "echo \"WordPress 已啟動！請在瀏覽器中輸入 http://$(hostname -I | awk '{print $1}'):$wordpress_port 進行訪問。\"" >> "$folder_name/run.sh"
 
 # 修改 run.sh 腳本權限
 chmod +x "$folder_name/run.sh"
