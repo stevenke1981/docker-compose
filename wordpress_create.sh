@@ -99,7 +99,7 @@ EOF
 cat > run.sh <<EOF
 #!/bin/bash
 
-docker-compose up -d
+docker compose up -d
 EOF
 
 # 提示信息
