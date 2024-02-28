@@ -25,8 +25,7 @@ compose_content="services:
   wordpress:
     image: wordpress:latest
     ports:
-      - 9000:9000
-      - 9443:9443
+      - 8081:80
     restart: always
     environment:
       - WORDPRESS_DB_HOST=db
