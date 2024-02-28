@@ -86,12 +86,12 @@ services:
       - "7890:7890/udp"
       - "9090:9090"
     restart: always
-
-  clash-dashboard:
-    image: centralx/clash-dashboard
-    container_name: clash-dashboard
+  yacd:
+    image: ghcr.io/haishanh/yacd:master
     ports:
-      - "7880:80"
+      - "1234:80"
+    volumes:
+      - /yacd-data:/yacd-data
     restart: always
 EOF
 
