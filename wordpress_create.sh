@@ -62,7 +62,7 @@ echo "" >> "$folder_name/run.sh"
 echo "# 執行 docker compose" >> "$folder_name/run.sh"
 echo "docker compose up -d" >> "$folder_name/run.sh"
 echo "" >> "$folder_name/run.sh"
-echo "echo \"WordPress 已啟動！請在瀏覽器中輸入 http://localhost:8081 進行訪問。\"" >> "$folder_name/run.sh"
+echo "echo \"WordPress 已啟動！請在瀏覽器中輸入 http://$(hostname -I | awk '{print $1}'):8081 進行訪問。\"" >> "$folder_name/run.sh"
 
 # 修改 run.sh 腳本權限
 chmod +x "$folder_name/run.sh"
