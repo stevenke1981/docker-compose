@@ -1,80 +1,112 @@
 #!/bin/bash
 
-# 專案資料夾名稱
-folder_name="wordpress"
+# 脚本版本
+VERSION="1.0.1"
 
-# 建立資料夾
-mkdir -p "$folder_name"
+# 帮助信息
+function help() {
+  echo "Usage: $0 [OPTIONS]"
+  echo ""
+  echo "Options:"
+  echo "  -h, --help              显示帮助信息"
+  echo "  -v, --version           显示脚本版本"
+  echo "  -d, --directory         Clash 配置目录 (默认: ./clash)"
+  echo "  -c, --config-file        Clash 订阅文件 (默认: config.yaml)"
+  echo "  -o, --output-file       生成的文件名 (默认: compose.yaml)"
+  echo ""
+  echo "Examples:"
+  echo "  $0"
+  echo "  $0 -d /etc/clash"
+  echo "  $0 -c my-config.yaml"
+  echo "  $0 -o my-compose.yaml"
+}
 
-# 讀取使用者輸入
+# 显示版本信息
+function version() {
+  echo "$0 $VERSION"
+}
 
-echo "請輸入 MySQL root 密碼："
-read mysql_root_password
+# 解析参数
+while getopts ":hvd:c:o:" opt; do
+  case $opt in
+    h)
+      help
+      exit 0
+      ;;
+    v)
+      version
+      exit 0
+      ;;
+    d)
+      DIRECTORY="$OPTARG"
+      ;;
+    c)
+      CONFIG_FILE="$OPTARG"
+      ;;
+    o)
+      OUTPUT_FILE="$OPTARG"
+      ;;
+    ?)
+      echo "Invalid option: -$OPTARG"
+      exit 1
+      ;;
+  esac
+done
 
-echo "請輸入 MySQL 使用者名稱："
-read mysql_user
+# 默认参数
+DIRECTORY=${DIRECTORY:-./clash}
+CONFIG_FILE=${CONFIG_FILE:-config.yaml}
+OUTPUT_FILE=${OUTPUT_FILE:-compose.yaml}
 
-echo "請輸入 MySQL 使用者密碼："
-read mysql_password
-
-echo "請輸入Wordpress使用Port號(預設為8081)："
-read wordpress_port
-
-# Check if WordPress port is empty, set to default if so
-if [[ -z "$wordpress_port" ]]; then
-  wordpress_port=8081
+# 检查目录是否存在
+if [ ! -d "$DIRECTORY" ]; then
+  echo "Error: Directory '$DIRECTORY' does not exist."
+  echo "Please create the directory or modify the script to specify the correct path."
+  exit 1
 fi
 
-# Compose 檔案內容
-compose_content="services:
- db:
-  # 使用支持 amd64 和 arm64 架構的 mariadb 镜像
-  image: mariadb:10.6.4-focal
-  # 如果您真的想使用 MySQL，取消注释以下行
-  # image: mysql:8.0.27
-  command: '--default-authentication-plugin=mysql_native_password'
-  volumes:
-   - db_data:/var/lib/mysql
-  restart: always
-  environment:
-   - MYSQL_ROOT_PASSWORD=$mysql_root_password
-   - MYSQL_DATABASE=wordpress
-   - MYSQL_USER=$mysql_user
-   - MYSQL_PASSWORD=$mysql_password
-  expose:
-   - 3306
-   - 33060
- wordpress:
-  image: wordpress:latest
-  ports:
-   - $wordpress_port:80
-  restart: always
-  environment:
-   - WORDPRESS_DB_HOST=db
-   - WORDPRESS_DB_USER=$mysql_user
-   - WORDPRESS_DB_PASSWORD=$mysql_password
-   - WORDPRESS_DB_NAME=wordpress
+# 检查配置文件是否存在
+if [ ! -f "$DIRECTORY/$CONFIG_FILE" ]; then
+  echo "Error: Config file '$DIRECTORY/$CONFIG_FILE' does not exist."
+  exit 1
+fi
 
-volumes:
- db_data:"
+# 生成 `compose.yaml` 文件
+cat > "$OUTPUT_FILE" <<EOF
+version: '3'
 
-# 建立 Compose 檔案
-echo "$compose_content" > "$folder_name/docker-compose.yaml"
+services:
+  # Clash
+  clash:
+    image: dreamacro/clash:latest
+    container_name: clash
+    volumes:
+      - $DIRECTORY/$CONFIG_FILE:/root/.config/clash/config.yaml
+    ports:
+      - "7890:7890/tcp"
+      - "7890:7890/udp"
+      - "9090:9090"
+    restart: always
 
-# 建立 run.sh 腳本
-echo "#!/bin/bash" > "$folder_name/run.sh"
-echo "" >> "$folder_name/run.sh"
-echo "# 切換到項目目錄" >> "$folder_name/run.sh"
-echo "cd \"\$(dirname \"\$0\")\"" >> "$folder_name/run.sh"
-echo "" >> "$folder_name/run.sh"
-echo "# 執行 docker compose" >> "$folder_name/run.sh"
-echo "docker compose up -d" >> "$folder_name/run.sh"
-echo "" >> "$folder_name/run.sh"
-echo "echo \"WordPress 已啟動！請在瀏覽器中輸入 http://$(hostname -I | awk '{print $1}'):$wordpress_port 進行訪問。\"" >> "$folder_name/run.sh"
+  clash-dashboard:
+    image: centralx/clash-dashboard
+    container_name: clash-dashboard
+    ports:
+      - "7880:80"
+    restart: always
+EOF
 
-# 修改 run.sh 腳本權限
-chmod +x "$folder_name/run.sh"
+# 生成 `run.sh` 文件
+cat > run.sh <<EOF
+#!/bin/bash
 
-# 輸出訊息
-echo "資料夾 '$folder_name' 和 compose.yaml 文件已建立。"
-echo "run.sh 腳本已生成到 $folder_name 目錄中。"
+docker-compose up -d
+EOF
+
+# 提示信息
+echo "生成文件成功："
+echo "  - compose.yaml"
+echo "  - run.sh"
+
+echo "请执行以下命令启动 Clash："
+echo "./run.sh"
