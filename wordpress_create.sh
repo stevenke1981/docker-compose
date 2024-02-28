@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 项目文件夹名称
-folder_name="wordpress-project"
+folder_name="wordpress"
 
 # Compose 文件内容
 compose_content="services:
@@ -25,7 +25,8 @@ compose_content="services:
   wordpress:
     image: wordpress:latest
     ports:
-      - 80:80
+      - 9000:9000
+      - 9443:9443
     restart: always
     environment:
       - WORDPRESS_DB_HOST=db
