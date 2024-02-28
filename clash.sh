@@ -88,10 +88,10 @@ services:
     restart: always
 
   clash-dashboard:
-    image: centralx/clash-dashboard
-    container_name: clash-dashboard
+    image: haishanh/yacd:master
+    container_name: yacd
     ports:
-      - "7880:80"
+      - "1234:80"
     restart: always
 EOF
 
