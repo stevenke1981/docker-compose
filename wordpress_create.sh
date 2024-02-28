@@ -19,8 +19,11 @@ read mysql_password
 
 echo "請輸入Wordpress使用Port號(預設為8081)："
 read wordpress_port
-if $wordpress_port=null
-$wordpress_port=8081
+
+# Check if WordPress port is empty, set to default if so
+if [[ -z "$wordpress_port" ]]; then
+  wordpress_port=8081
+fi
 
 # Compose 檔案內容
 compose_content="services:
