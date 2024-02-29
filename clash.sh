@@ -100,7 +100,8 @@ cat > run.sh <<EOF
 
 docker-compose up -d
 EOF
-
+#提高執行權限
+chmod +x run.sh
 # 提示信息
 echo "生成文件成功："
 echo "  - compose.yaml"
