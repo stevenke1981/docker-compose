@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 脚本版本
-VERSION="1.0.0"
+VERSION="1.0.2"
 
 # 帮助信息
 function help() {
@@ -58,16 +58,16 @@ DIRECTORY=${DIRECTORY:-./clash}
 CONFIG_FILE=${CONFIG_FILE:-config.yaml}
 OUTPUT_FILE=${OUTPUT_FILE:-compose.yaml}
 
-# 检查目录是否存在
+# 检查目录是否存在，如果不存在则创建
 if [ ! -d "$DIRECTORY" ]; then
-  echo "Error: Directory '$DIRECTORY' does not exist."
-  exit 1
+  echo "Directory '$DIRECTORY' does not exist, creating it..."
+  mkdir -p "$DIRECTORY"
 fi
 
-# 检查配置文件是否存在
+# 检查配置文件是否存在，如果不存在则创建
 if [ ! -f "$DIRECTORY/$CONFIG_FILE" ]; then
-  echo "Error: Config file '$DIRECTORY/$CONFIG_FILE' does not exist."
-  exit 1
+  echo "Config file '$DIRECTORY/$CONFIG_FILE' does not exist, creating it..."
+  touch "$DIRECTORY/$CONFIG_FILE"
 fi
 
 # 生成 `compose.yaml` 文件
@@ -87,9 +87,8 @@ services:
       - "9090:9090"
     restart: always
 
-  clash-dashboard:
-    image: haishanh/yacd:master
-    container_name: yacd
+  yacd:
+    image: ghcr.io/haishanh/yacd:master
     ports:
       - "1234:80"
     restart: always
