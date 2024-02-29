@@ -38,7 +38,7 @@ cat <<EOF > run.sh
 docker volume create ovpn-data
 
 # Start OpenVPN server
-docker-compose up -d
+docker compose up -d
 
 # Generate server configuration and keys
 docker exec -it openvpn ovpn_genconfig -u udp://$SERVER_NAME
