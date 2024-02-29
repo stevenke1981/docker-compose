@@ -98,7 +98,7 @@ EOF
 cat > run.sh <<EOF
 #!/bin/bash
 
-docker-compose up -d
+docker compose up -d
 EOF
 #提高執行權限
 chmod +x run.sh
